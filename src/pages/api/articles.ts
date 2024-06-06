@@ -1,0 +1,55 @@
+import axios from 'axios';
+import cheerio from 'cheerio';
+
+const fetchMediumArticles = async (page = 1, limit = 9) => {
+  const mediumUsername = 'anassaifen'; // Replace with your Medium username
+  const mediumRSSFeed = `https://${mediumUsername}.medium.com/feed?page=${page}`;
+ 
+  try {
+    const response = await axios.get(mediumRSSFeed);
+    const feed = response.data;
+
+    const $ = cheerio.load(feed, { xmlMode: true });
+    const articles = $('item').map((_, item) => ({
+      title: $(item).find('title').text(),
+      link: $(item).find('link').text(),
+      pubDate: $(item).find('pubDate').text(),
+      content: $(item).find('description').text(),
+      image: extractImage($(item).find('content\\:encoded').text()), // Extract image URL
+      excerpt: extractExcerpt($(item).find('content\\:encoded').text()), // Extract excerpt
+    })).get();
+
+    // Apply pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    return articles.slice(startIndex, endIndex);
+  } catch (error) {
+    console.error('Error fetching Medium RSS feed:', error);
+    throw error;
+  }
+};
+
+const extractExcerpt = (content, maxLength = 200) => {
+  const $ = cheerio.load(content); // Load HTML content with cheerio
+  const paragraph = $('p').first().text(); // Extract text from the first paragraph
+  return paragraph.length > maxLength ? paragraph.substring(0, maxLength) + '...' : paragraph;
+};
+
+const extractImage = (content) => {
+  const $ = cheerio.load(content); // Load HTML content with cheerio
+  const imgElement = $('img').first();
+  return imgElement.attr('src');
+};
+
+const fetchArticlesHandler = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const articles = await fetchMediumArticles(parseInt(page));
+    res.status(200).json(articles);
+  } catch (error) {
+    console.error('Error fetching Medium articles:', error);
+    res.status(500).json({ message: 'Error fetching Medium articles', error: error.message });
+  }
+};
+
+export default fetchArticlesHandler;
