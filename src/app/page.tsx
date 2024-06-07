@@ -4,9 +4,18 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/globals.css';
+import Image from 'next/image';
 
 export default function HomePage() {
-  const [articles, setArticles] = useState([]);
+  interface Article {
+    link: string;
+    title: string;
+    pubDate: string;
+    image?: string;
+    excerpt: string;
+  }
+  
+  const [articles, setArticles] = useState<Article[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -36,7 +45,7 @@ export default function HomePage() {
           <div key={article.link} className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-[#d0ebe9]">
             <h2 className="text-xl font-semibold mb-2">{article.title}</h2>
             <p className="text-gray-600 text-sm mb-2">{new Date(article.pubDate).toLocaleDateString()}</p>
-            {article.image && <img src={article.image} alt="Article Image" className="w-full h-48 object-cover mb-4 rounded-lg" />}
+            {article.image && <Image width={48} height={48} src={article.image} alt="Article Image" quality={100} className="w-full h-48 object-cover mb-4 rounded-lg" />}
             <p className="text-sm">{article.excerpt}</p>
             <a href={article.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 mt-4 inline-block">
               Read more
