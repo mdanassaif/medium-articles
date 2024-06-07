@@ -1,5 +1,7 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
+import { Request, Response } from 'express';
+
 
 const fetchMediumArticles = async (page = 1, limit = 9) => {
   const mediumUsername = 'anassaifen'; // Replace with your Medium username
@@ -29,27 +31,35 @@ const fetchMediumArticles = async (page = 1, limit = 9) => {
   }
 };
 
-const extractExcerpt = (content, maxLength = 200) => {
+const extractExcerpt = (content: string, maxLength = 200) => {
   const $ = cheerio.load(content); // Load HTML content with cheerio
   const paragraph = $('p').first().text(); // Extract text from the first paragraph
   return paragraph.length > maxLength ? paragraph.substring(0, maxLength) + '...' : paragraph;
 };
 
-const extractImage = (content) => {
+const extractImage = (content: string) => {
   const $ = cheerio.load(content); // Load HTML content with cheerio
   const imgElement = $('img').first();
   return imgElement.attr('src');
 };
-
-const fetchArticlesHandler = async (req, res) => {
+const fetchArticlesHandler = async (req: Request, res: Response) => {
   try {
-    const { page = 1 } = req.query;
+    let page: string;
+if (typeof req.query.page === 'string') {
+  page = req.query.page;
+} else {
+  page = '1';  
+}
     const articles = await fetchMediumArticles(parseInt(page));
     res.status(200).json(articles);
   } catch (error) {
     console.error('Error fetching Medium articles:', error);
-    res.status(500).json({ message: 'Error fetching Medium articles', error: error.message });
+    if (error instanceof Error) {
+      res.status(500).json({ message: 'Error fetching Medium articles', error: error.message });
+    } else {
+      res.status(500).json({ message: 'Error fetching Medium articles', error: 'Unknown error' });
+    }
   }
-};
+}
 
 export default fetchArticlesHandler;
