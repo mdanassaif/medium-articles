@@ -16,9 +16,9 @@ const fetchMediumArticles = async (page = 1, limit = 9) => {
       title: $(item).find('title').text(),
       link: $(item).find('link').text(),
       pubDate: $(item).find('pubDate').text(),
-      content: $(item).find('description').text(),
-      image: extractImage($(item).find('content\\:encoded').text()), // Extract image URL
-      excerpt: extractExcerpt($(item).find('content\\:encoded').text()), // Extract excerpt
+      content: $(item).find('content\\:encoded').text(), // Full content
+      image: extractImage($(item).find('content\\:encoded').text()),
+      excerpt: extractExcerpt($(item).find('content\\:encoded').text(), 150), // Adjust length as needed
     })).get();
 
     // Apply pagination

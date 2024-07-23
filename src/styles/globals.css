@@ -3,12 +3,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Add custom styles if needed */
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f9fafb;
+@keyframes gradientFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -200;
+  }
 }
 
-
- 
+svg text {
+  stroke: url(#gradient);
+  stroke-width: 2px;
+  stroke-dasharray: 100;
+  animation: gradientFlow 3s linear infinite;
+}
 
